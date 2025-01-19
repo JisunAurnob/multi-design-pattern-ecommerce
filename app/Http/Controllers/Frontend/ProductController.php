@@ -9,70 +9,23 @@ use App\Models\ReviewRating;
 use Brian2694\Toastr\Facades\Toastr;
 use Illuminate\Http\Request;
 use Throwable;
+use App\Factories\ProductFactory;
 
 class ProductController extends Controller
 {
-    public function products()
+    public function products(Request $request)
     {
         try {
-            if(request()->has('categoryName') && request()->categoryName != null){
-                $kids=Category::where('name',request()->categoryName)->first();
-                if($kids){
-                    $product = Product::query()
-                    ->with(['productImages'])
-                    ->where('category_id', $kids->id) 
-                    ->where('status', 'active');
+            $filters = $request->all();
+            $products = ProductFactory::getProducts($filters);
 
-                }
-                else{
-                    $product = Product::query()
-                    ->with(['productImages'])
-                    ->where('status', 'active');
-                }
-            }else{
-                $product = Product::query()
-                ->with(['productImages'])
-                ->where('status', 'active');
-            }
+            $categories = Category::where('parent_id', null)->with('childs')->get();
 
-            $categories = explode('|', request()->get('category'));
-            // dd($categories);
-            if (request()->get('category')) {
-                $products = $product->whereIn('category_id', $categories);
-            }
-        //    dd($categories);
-            if (request()->query('sort') === 'default') {
-                $products = $product->orderBy('id', 'desc');
-            }
-            if (request()->query('sort') === 'asc') {
-                $products = $product->orderBy('name', 'asc');
-            }
-            if (request()->query('sort') === 'desc') {
-
-                $products = $product->orderBy('name', 'desc');
-            }
-            if (request()->query('sort') === 'low') {
-                $products = $product->orderBy('price', 'asc');
-            }
-            if (request()->query('sort') === 'high') {
-                $products = $product->orderBy('price', 'desc');
-            }
-            if (request()->query('start_price') && request()->query('end_price')) {
-                $products = $product->where('price', '>=', request()->query('start_price'))
-                    ->where('price', '<=', request()->query('end_price'));
-            }
-            
-            // $product->orderBy('id','desc');
-
-            $products = $product->paginate(request()->query('show') ?? 12);
-            $categories=Category::where('parent_id',null)->with('childs')->get();
-            return view('frontend.pages.product.all',compact('products','categories'));
+            return view('frontend.pages.product.all', compact('products', 'categories'));
         } catch (Throwable $throwable) {
-
             Toastr::error($throwable->getMessage());
             return redirect()->back();
         }
-
     }
 
 

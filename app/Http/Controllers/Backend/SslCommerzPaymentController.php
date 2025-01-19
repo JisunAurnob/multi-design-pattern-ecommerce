@@ -60,17 +60,17 @@ class SslCommerzPaymentController extends Controller
 
         $order = Order::where('transaction_id', $tran_id)->first();
 
-        if ($order->payment_status == Order::PENDING) {
+        if (isset($order->payment_status) && $order->payment_status == Order::PENDING) {
             $update_product = Order::where('transaction_id', $tran_id)
                 ->update(['payment_status' => 'failed']);
 
             $query = "tran_id={$request->input('tran_id')}&amount=" . $request->input('amount') . '&order_id=' . $order->id;
             return redirect()->away(config('app.frontend_url') . 'failed?' . $query);
-        } else if ($order->payment_status == Order::SUCCESS) {
+        } else if (isset($order->payment_status) && $order->payment_status == Order::SUCCESS) {
             $query = "tran_id={$request->input('tran_id')}&amount=" . $request->input('amount') . '&order_id=' . $order->id;
             return redirect()->away(config('app.frontend_url') . 'already-paid?' . $query);
         } else {
-            $query = "tran_id={$request->input('tran_id')}&amount=" . $request->input('amount') . '&order_id=' . $order->id;
+            $query = "tran_id={$request->input('tran_id')}&amount=" . $request->input('amount') . '&order_id=' . optional($order)->id;
             return redirect()->away(config('app.frontend_url') . 'invalid?' . $query);
         }
     }

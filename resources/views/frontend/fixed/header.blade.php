@@ -230,7 +230,7 @@
             <div class="flex-shrink-0 flex items-center">
                 <a href="{{ route('home') }}" class="-m-1.5 p-1.5">
                     <span class="sr-only">Your Company</span>
-                    <img class="h-14 w-auto" src="{{ $settings->logo }}" alt="" />
+                    <img class="h-auto w-full" src="{{ $settings->logo }}" alt="" />
                 </a>
             </div>
 
